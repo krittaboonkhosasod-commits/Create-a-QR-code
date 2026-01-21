@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CREATE A QR CODE</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:radial-gradient(circle at top,#6a85ff,#000428);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    color:#fff;
+}
+
+.app{
+    width:360px;
+    padding:28px;
+    border-radius:30px;
+    background:linear-gradient(145deg,#151a4d,#0a0d2e);
+    box-shadow:
+      0 40px 80px rgba(0,0,0,.7),
+      inset 0 0 40px rgba(255,255,255,.05);
+    position:relative;
+}
+
+h1{
+    text-align:center;
+    margin:0 0 18px;
+    font-size:22px;
+    letter-spacing:1px;
+}
+
+input{
+    width:100%;
+    padding:15px;
+    border-radius:18px;
+    border:none;
+    outline:none;
+    font-size:15px;
+    margin-bottom:14px;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:999px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    margin-top:14px;
+    color:white;
+    background:linear-gradient(135deg,#00d2ff,#3a7bd5);
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+    transition:.25s;
+}
+button:active{transform:scale(.97)}
+
+.preview{
+    margin-top:22px;
+    padding:18px;
+    border-radius:24px;
+    background:rgba(0,0,0,.35);
+    display:flex;
+    justify-content:center;
+    min-height:260px;
+}
+
+/* ===== Custom Dropdown ===== */
+.dropdown{position:relative;margin-top:12px}
+.dd-selected{
+    padding:15px;
+    border-radius:18px;
+    background:#0f1338;
+    cursor:pointer;
+    transition:.25s;
+    box-shadow:
+      inset 4px 4px 10px rgba(0,0,0,.6),
+      inset -4px -4px 10px rgba(255,255,255,.05);
+}
+.dd-menu{
+    position:absolute;
+    top:110%;
+    left:0;
+    width:100%;
+    padding:8px;
+    border-radius:18px;
+    background:linear-gradient(145deg,#1b1f55,#101437);
+    box-shadow:0 25px 60px rgba(0,0,0,.7);
+    opacity:0;
+    transform:translateY(-10px) scale(.98);
+    pointer-events:none;
+    transition:.25s;
+    z-index:20;
+}
+.dropdown.active .dd-menu{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    pointer-events:auto;
+}
+.dd-menu div{
+    padding:12px 14px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:.2s;
+}
+.dd-menu div:hover{
+    background:linear-gradient(90deg,#7f5cff,#00d4ff);
+}
+
+/* ===== Developer Credit : Warm White Glow ===== */
+.credit{
+    position:absolute;
+    right:12px;
+    bottom:8px;
+    font-size:9px;
+    letter-spacing:.6px;
+    user-select:none;
+    color:#fff8e1;
+    opacity:.65;
+    text-shadow:
+      0 0 2px rgba(255,244,200,.55),
+      0 0 5px rgba(255,225,140,.35),
+      0 0 8px rgba(255,200,90,.15);
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+<h1>CREATE A QR CODE</h1>
+
+<input id="text" placeholder="Paste website link here">
+
+<div class="dropdown" id="sizeDD">
+  <div class="dd-selected">1000 × 1000</div>
+  <div class="dd-menu">
+    <div data-v="200">200 × 200</div>
+    <div data-v="500">500 × 500</div>
+    <div data-v="1000">1000 × 1000</div>
+    <div data-v="1500">1500 × 1500</div>
+    <div data-v="2000">2000 × 2000</div>
+    <div data-v="4096">4096 × 4096 (4K)</div>
+  </div>
+</div>
+
+<div class="dropdown" id="formatDD">
+  <div class="dd-selected">PNG</div>
+  <div class="dd-menu">
+    <div data-v="png">PNG</div>
+    <div data-v="jpg">JPG</div>
+    <div data-v="svg">SVG</div>
+  </div>
+</div>
+
+<button onclick="download()">Download</button>
+
+<div class="preview" id="preview"></div>
+
+<div class="credit">THE END DX</div>
+</div>
+
+<script>
+let size=1000,format='png',qr;
+const input=document.getElementById('text');
+const preview=document.getElementById('preview');
+
+/* Real-time QR preview */
+input.addEventListener('input',()=>{
+  const val=input.value.trim();
+  preview.innerHTML='';
+  if(!val) return;
+  qr=new QRCode(preview,{
+    text:val,
+    width:260,
+    height:260,
+    correctLevel:QRCode.CorrectLevel.H
+  });
+});
+
+/* Download */
+function download(){
+  if(!qr)return alert("กรุณาใส่ลิงก์ก่อน");
+  if(format==='svg'){
+    alert("SVG ต้องใช้ library เสริม");
+    return;
+  }
+  const canvas=document.querySelector('#preview canvas');
+  const tmp=document.createElement('canvas');
+  tmp.width=tmp.height=size;
+  tmp.getContext('2d').drawImage(canvas,0,0,size,size);
+  const a=document.createElement('a');
+  a.href=tmp.toDataURL('image/'+format);
+  a.download='QR_'+size+'.'+format;
+  a.click();
+}
+
+/* Dropdown logic */
+document.querySelectorAll('.dropdown').forEach(dd=>{
+  dd.querySelector('.dd-selected').onclick=()=>{
+    document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('active'));
+    dd.classList.toggle('active');
+  };
+  dd.querySelectorAll('.dd-menu div').forEach(i=>{
+    i.onclick=()=>{
+      dd.querySelector('.dd-selected').innerText=i.innerText;
+      dd.classList.remove('active');
+      if(dd.id==='sizeDD') size=i.dataset.v;
+      if(dd.id==='formatDD') format=i.dataset.v;
+    }
+  })
+});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.dropdown'))
+    document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('active'));
+});
+</script>
+
+</body>
+</html>
